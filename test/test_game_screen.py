@@ -11,7 +11,7 @@ class GameScreenTests(unittest.TestCase):
     def test_find_players(self):
         file = 'screenshot3'
         self.read_image('screenshots/%s.png' % file)
-        players = self.game_screen.find_players(True, file)
+        players = self.game_screen.find_players(False, file)
         print(players)
 
     def read_image(self, path):

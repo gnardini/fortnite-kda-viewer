@@ -1,7 +1,6 @@
 import numpy as np
 import time
 import cv2
-import pytesseract
 from PIL import Image
 import os
 import random
@@ -45,9 +44,9 @@ class GameScreen:
         player = self.find_name_imgs(player_name_mask)
 
 
-        # cv2.imshow('image', other_names_mask)
-        # cv2.waitKey(0)
-        # cv2.destroyAllWindows()
+        cv2.imshow('image', other_names_mask)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
 
     def apply_mask(self, img, min, max):
          mask = cv2.inRange(img, np.array(min, dtype=np.uint8),
