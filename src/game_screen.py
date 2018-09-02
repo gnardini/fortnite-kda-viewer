@@ -36,7 +36,7 @@ class GameScreen:
             if save_letters:
                 for letter in letters:
                     letter = self.crop_image(letter)
-                    path = '/Users/gnardini/Documents/Code/fortnite-kda-viewer/dataset/screenshots' + file_name + '-' + str(last_index) + '.png'
+                    path = '/Users/gnardini/Documents/Code/fortnite-kda-viewer/dataset/screenshots/' + file_name + '-' + str(last_index) + '.png'
                     cv2.imwrite(path, letter)
                     last_index = last_index + 1
 

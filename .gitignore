@@ -1,5 +1,5 @@
+test/screenshots
 .DS_Store
-*.png
 bin/
 include/
 lib/
