@@ -4,10 +4,16 @@ import json
 from pprint import pprint
 import letters_classifier
 
+white_mapping = True
 path = '/Users/gnardini/Documents/Code/fortnite-kda-viewer/dataset/'
+screenshots_dir = 'screenshots'
+mapping_file = 'mapping.json'
+if white_mapping:
+    mapping_file = 'white_mapping.json'
+    screenshots_dir = screenshots_dir + '/white'
 
 
-json_data = open(path + 'mapping.json').read()
+json_data = open(path + mapping_file).read()
 mapping = json.loads(json_data)
 classifier = letters_classifier.LettersClassifier()
 parsed_files = []
@@ -17,28 +23,28 @@ for k in mapping:
 cv2.namedWindow('image', cv2.WINDOW_NORMAL)
 
 used = []
-for file in os.listdir(path + 'screenshots'):
+for file in os.listdir(path + screenshots_dir):
     if not file.endswith('.json') and not file in parsed_files:
-        file_path = path + 'screenshots/' + file
-        img = cv2.imread(file_path)
+        file_path = path + screenshots_dir + '/' + file
+        img = cv2.imread(file_path, 0)
         if (img.shape == None):
             os.remove(file_path)
         print(file)
-        letter = classifier.classify_letter(img, mapping)
+        letter = classifier.classify_letter(img, mapping = mapping, is_white = white_mapping)
         if letter[1] <= .02:
             print('Found a ' + letter[0] + ' with error ' + str(letter[1]))
             os.remove(file_path)
             continue
-        elif letter[1] <= .1:
+        elif letter[1] < .1:
             print('Found a ' + letter[0] + ' with error ' + str(letter[1]))
         bordersize = 3
-        border = cv2.copyMakeBorder(img, top=bordersize, bottom=bordersize, left=bordersize, right=bordersize, borderType=cv2.BORDER_CONSTANT, value=[0, 0, 0])
+        border = cv2.copyMakeBorder(img, top=bordersize, bottom=bordersize, left=bordersize, right=bordersize, borderType=cv2.BORDER_CONSTANT, value=[0])
         cv2.imshow('image', border)
         character = chr(cv2.waitKey(0))
         while character == '/':
             to_delete = used.pop()
             deleted = mapping[to_delete].pop()
-            print('Delted file %s from letter %s' % (deleted, to_delete))
+            print('Removed file %s from letter %s' % (deleted, to_delete))
             character = chr(cv2.waitKey(0))
         print(character)
         if character == '.':
@@ -51,6 +57,6 @@ for file in os.listdir(path + 'screenshots'):
                 mapping[character] = []
             mapping[character].append(file)
 
-with open(path + 'mapping.json', 'w') as outfile:
+with open(path + mapping_file, 'w') as outfile:
     json.dump(mapping, outfile, indent=4, sort_keys=True)
 cv2.destroyAllWindows()

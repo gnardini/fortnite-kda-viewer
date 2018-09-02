@@ -10,17 +10,26 @@ class LettersClassifier:
         with open(self.path + 'mapping.json') as f:
             json_data = f.read()
             self.mapping = json.loads(json_data)
+        with open(self.path + 'white_mapping.json') as f:
+            json_data = f.read()
+            self.white_mapping = json.loads(json_data)
 
         self.max_threshold = .05
 
-    def classify_letter(self, img, mapping=None):
+    def classify_letter(self, img, is_white=False, mapping=None):
         if mapping == None:
-            mapping = self.mapping
+            if is_white:
+                mapping = self.white_mapping
+            else:
+                mapping = self.mapping
         min = 1
         letter = None
         for k in mapping:
             for file in mapping[k]:
-                other_img = cv2.imread(self.path + 'screenshots/' + file, 0)
+                path = self.path + 'screenshots/'
+                if is_white:
+                    path = path + 'white/'
+                other_img = cv2.imread(path + file, 0)
                 dist = self.images_distance(img, other_img)
                 if dist < min:
                     min = dist

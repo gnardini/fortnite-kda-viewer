@@ -13,11 +13,11 @@ class GameScreenTests(unittest.TestCase):
 
     def test_find_players(self):
         print()
-        i = 16
-        while i <= 16:
+        i = 1
+        while i <= 39:
             file = 'screenshot' + str(i)
             self.read_image('screenshots/%s.png' % file)
-            players = self.game_screen.find_players(print_mask=True, save_letters=False, file_name=file)
+            players = self.game_screen.find_players(print_mask=False, save_letters=True, file_name='white/' + file)
             i = i+1
             print(players)
 
