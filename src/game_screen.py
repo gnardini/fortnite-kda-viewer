@@ -14,14 +14,13 @@ class GameScreen:
         self.player_name_color_min = [0, 50, 50]
         self.player_name_color_max = [20, 255, 255]
 
-        # self.names_color_min.reverse()
-        # self.names_color_max.reverse()
-        # self.player_name_color_min.reverse()
-        # self.player_name_color_max.reverse()
+        self.names_color_min.reverse()
+        self.names_color_max.reverse()
+        self.player_name_color_min.reverse()
+        self.player_name_color_max.reverse()
 
     def find_players(self, save_letters=False, file_name=None):
         screen = self.vision.frame
-        # screen = cv2.cvtColor(screen, cv2.COLOR_BGR2HSV)
         shape = screen.shape
 
         height = shape[0]//4
@@ -37,7 +36,7 @@ class GameScreen:
             if save_letters:
                 for letter in letters:
                     letter = self.crop_image(letter)
-                    path = '/Users/gnardini/Documents/Code/fortnite-kda-viewer/dataset/' + file_name + '-' + str(last_index) + '.png'
+                    path = '/Users/gnardini/Documents/Code/fortnite-kda-viewer/dataset/screenshots' + file_name + '-' + str(last_index) + '.png'
                     cv2.imwrite(path, letter)
                     last_index = last_index + 1
 
@@ -50,8 +49,8 @@ class GameScreen:
         cv2.destroyAllWindows()
 
     def apply_mask(self, img, min, max):
-         mask = cv2.inRange(img, np.array([60, 80, 160], dtype=np.uint8),
-               np.array([110, 100, 220], dtype=np.uint8))
+         mask = cv2.inRange(img, np.array([50, 65, 200], dtype=np.uint8),
+               np.array([70, 80, 255], dtype=np.uint8))
          mask = cv2.bitwise_and(img, img, mask = mask)
          mask = cv2.cvtColor(mask,cv2.COLOR_BGR2GRAY)
 
@@ -64,7 +63,7 @@ class GameScreen:
 
          ignore,mask = cv2.threshold(mask,1,255,cv2.THRESH_BINARY)
          # mask = cv2.erode(mask, np.ones((1, 1),np.uint8))
-         mask = cv2.dilate(mask, np.ones((2, 2),np.uint8))
+         # mask = cv2.dilate(mask, np.ones((1, 1),np.uint8))
          return mask
 
     def find_name_imgs(self, img):
@@ -89,14 +88,20 @@ class GameScreen:
         return self.separate_images(img, self.crop_by_empty_row)
 
     def crop_by_empty_row(self, img):
+        max_consecutive_empty = 3
+        consecutive_empty = 0
         first_row_empty = None
         for i in range(img.shape[0]): # rows
             row_is_empty = len([j for j in range(img.shape[1]) if img[i][j] > 0]) == 0
-            if first_row_empty == None:
-                if row_is_empty:
+            if row_is_empty:
+                consecutive_empty = consecutive_empty + 1
+                if first_row_empty == None:
                     first_row_empty = i
-            elif not row_is_empty:
+            elif consecutive_empty >= max_consecutive_empty:
                 return [img[:first_row_empty, :], img[i:, :]]
+            else:
+                consecutive_empty = 0
+                first_row_empty = None
 
         if first_row_empty == None:
             return [img]

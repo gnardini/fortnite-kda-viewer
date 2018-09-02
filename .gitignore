@@ -1,5 +1,8 @@
+.DS_Store
+*.png
 bin/
 include/
 lib/
 pip-selfcheck.json
 *__pycache__*
+*.pyc
