@@ -1,5 +1,6 @@
 from src import game_screen as gs
 from src import vision as v
+import os
 import cv2
 import unittest
 
@@ -15,6 +16,6 @@ class GameScreenTests(unittest.TestCase):
         print(players)
 
     def read_image(self, path):
-        file_path = '/'.join(__file__.split('/')[:-1]) + '/' + path
+        file_path = os.path.join(os.path.split(__file__)[0], path)
         img = cv2.imread(file_path)
         self.vision.frame = img
