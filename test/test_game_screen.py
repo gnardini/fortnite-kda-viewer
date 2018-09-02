@@ -10,7 +10,7 @@ class GameScreenTests(unittest.TestCase):
         self.game_screen = gs.GameScreen(self.vision)
 
     def test_find_players(self):
-        file = 'screenshot3'
+        file = 'screenshot2'
         self.read_image('screenshots/%s.png' % file)
         players = self.game_screen.find_players(False, file)
         print(players)

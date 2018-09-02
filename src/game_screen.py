@@ -9,18 +9,19 @@ class GameScreen:
     def __init__(self, vision):
         self.vision = vision
 
-        self.names_color_min = [170, 40, 45]
-        self.names_color_max = [250, 120, 150]
-        self.player_name_color_min = [60, 140, 70]
-        self.player_name_color_max = [120, 200, 120]
+        self.names_color_min = [0, 50, 50]
+        self.names_color_max = [10, 250, 255]
+        self.player_name_color_min = [0, 50, 50]
+        self.player_name_color_max = [20, 255, 255]
 
-        self.names_color_min.reverse()
-        self.names_color_max.reverse()
-        self.player_name_color_min.reverse()
-        self.player_name_color_max.reverse()
+        # self.names_color_min.reverse()
+        # self.names_color_max.reverse()
+        # self.player_name_color_min.reverse()
+        # self.player_name_color_max.reverse()
 
     def find_players(self, save_letters=False, file_name=None):
         screen = self.vision.frame
+        # screen = cv2.cvtColor(screen, cv2.COLOR_BGR2HSV)
         shape = screen.shape
 
         height = shape[0]//4
@@ -49,13 +50,21 @@ class GameScreen:
         cv2.destroyAllWindows()
 
     def apply_mask(self, img, min, max):
-         mask = cv2.inRange(img, np.array(min, dtype=np.uint8),
-               np.array(max, dtype=np.uint8))
+         mask = cv2.inRange(img, np.array([60, 80, 160], dtype=np.uint8),
+               np.array([110, 100, 220], dtype=np.uint8))
          mask = cv2.bitwise_and(img, img, mask = mask)
          mask = cv2.cvtColor(mask,cv2.COLOR_BGR2GRAY)
+
+         # mask2 = cv2.inRange(img, np.array([160, 50, 50], dtype=np.uint8),
+         #      np.array([179, 255, 255], dtype=np.uint8))
+         # mask2 = cv2.bitwise_and(img, img, mask = mask2)
+         # mask2 = cv2.cvtColor(mask2,cv2.COLOR_BGR2GRAY)
+         #
+         # mask = cv2.bitwise_or(mask, mask2)
+
          ignore,mask = cv2.threshold(mask,1,255,cv2.THRESH_BINARY)
-         mask = cv2.erode(mask, np.ones((1, 1),np.uint8))
-         mask = cv2.dilate(mask, np.ones((1, 1),np.uint8))
+         # mask = cv2.erode(mask, np.ones((1, 1),np.uint8))
+         mask = cv2.dilate(mask, np.ones((2, 2),np.uint8))
          return mask
 
     def find_name_imgs(self, img):
