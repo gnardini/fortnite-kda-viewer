@@ -1,5 +1,6 @@
 from src import game_screen as gs
 from src import vision as v
+from src import letters_classifier as c
 import os
 import cv2
 import unittest
@@ -7,14 +8,16 @@ import unittest
 class GameScreenTests(unittest.TestCase):
     def setUp(self):
         self.vision = v.Vision()
-        self.game_screen = gs.GameScreen(self.vision)
+        self.classifier = c.LettersClassifier()
+        self.game_screen = gs.GameScreen(self.vision, self.classifier)
 
     def test_find_players(self):
-        i = 6
-        while i <= 7:
+        print()
+        i = 16
+        while i <= 16:
             file = 'screenshot' + str(i)
             self.read_image('screenshots/%s.png' % file)
-            players = self.game_screen.find_players(False, file)
+            players = self.game_screen.find_players(print_mask=True, save_letters=False, file_name=file)
             i = i+1
             print(players)
 

@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-path = '/Users/gnardini/Documents/Code/fortnite-kda-viewer/test/screenshots/screenshot15.png'
+path = '/Users/gnardini/Documents/Code/fortnite-kda-viewer/test/screenshots/screenshot16.png'
 
 img = cv2.imread(path)
 # img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)

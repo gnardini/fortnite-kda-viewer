@@ -6,60 +6,47 @@ import os
 import random
 
 class GameScreen:
-    def __init__(self, vision):
+    def __init__(self, vision, letters_classifier):
         self.vision = vision
+        self.letters_classifier = letters_classifier
 
-        self.names_color_min = [0, 50, 50]
-        self.names_color_max = [10, 250, 255]
-        self.player_name_color_min = [0, 50, 50]
-        self.player_name_color_max = [20, 255, 255]
+        self.enemy_color_min = [50, 65, 200]
+        self.enemy_color_max = [70, 80, 255]
+        self.player_name_color_min = [100, 180, 40]
+        self.player_name_color_max = [120, 210, 55]
 
-        self.names_color_min.reverse()
-        self.names_color_max.reverse()
-        self.player_name_color_min.reverse()
-        self.player_name_color_max.reverse()
-
-    def find_players(self, save_letters=False, file_name=None):
+    def find_players(self, print_mask=False, save_letters=False, file_name=None):
         screen = self.vision.frame
         shape = screen.shape
 
         height = shape[0]//4
         rect = screen[(shape[0]-height*3//2):shape[0]-height//2, 0:shape[1]//4]
 
-        other_names_mask = self.apply_mask(rect, self.names_color_min, self.names_color_max)
+        other_names_mask = self.apply_mask(rect, self.enemy_color_min, self.enemy_color_max)
         player_name_mask = self.apply_mask(rect, self.player_name_color_min, self.player_name_color_max)
 
         other_players = self.find_name_imgs(other_names_mask)
-        last_index = 1
-        for other in other_players:
-            letters = self.separate_letters(other)
-            if save_letters:
-                for letter in letters:
-                    letter = self.crop_image(letter)
-                    path = '/Users/gnardini/Documents/Code/fortnite-kda-viewer/dataset/screenshots/' + file_name + '-' + str(last_index) + '.png'
-                    cv2.imwrite(path, letter)
-                    last_index = last_index + 1
+        players = self.player_names_from_img(other_players)
 
-        # TODO: If not save_letters do something with this.
         player = self.find_name_imgs(player_name_mask)
+        player = self.player_names_from_img(player)
 
 
-        cv2.imshow('image', other_names_mask)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
+        if save_letters:
+            self.save_letters_to_file(other_players, file_name)
+
+        if print_mask:
+            cv2.imshow('image', other_names_mask)
+            cv2.waitKey(0)
+            cv2.destroyAllWindows()
+
+        return players
 
     def apply_mask(self, img, min, max):
-         mask = cv2.inRange(img, np.array([50, 65, 200], dtype=np.uint8),
-               np.array([70, 80, 255], dtype=np.uint8))
+         mask = cv2.inRange(img, np.array(min, dtype=np.uint8),
+               np.array(max, dtype=np.uint8))
          mask = cv2.bitwise_and(img, img, mask = mask)
          mask = cv2.cvtColor(mask,cv2.COLOR_BGR2GRAY)
-
-         # mask2 = cv2.inRange(img, np.array([160, 50, 50], dtype=np.uint8),
-         #      np.array([179, 255, 255], dtype=np.uint8))
-         # mask2 = cv2.bitwise_and(img, img, mask = mask2)
-         # mask2 = cv2.cvtColor(mask2,cv2.COLOR_BGR2GRAY)
-         #
-         # mask = cv2.bitwise_or(mask, mask2)
 
          ignore,mask = cv2.threshold(mask,1,255,cv2.THRESH_BINARY)
          # mask = cv2.erode(mask, np.ones((1, 1),np.uint8))
@@ -111,7 +98,8 @@ class GameScreen:
             return [img[:first_row_empty, :]]
 
     def separate_letters(self, img):
-        return self.separate_images(img, self.separate_letter)
+        letters = self.separate_images(img, self.separate_letter)
+        return [self.crop_image(l) for l in letters]
 
     # TODO: Make this and crop_by_empty_row generic.
     def separate_letter(self, img):
@@ -131,10 +119,28 @@ class GameScreen:
             print('Something really bad happened. Please fix. :)')
             return [img[:, :first_col_empty]]
 
+    def player_names_from_img(self, player_imgs):
+        players = []
+        for player_img in player_imgs:
+            letters = self.separate_letters(player_img)
+            letters = [self.letter_from_img(img) for img in letters]
+            player_name = ''.join(letters)
+            if '?' not in player_name:
+                players.append(player_name)
 
-    # Not implemented yet, future optimization
-    def find_names_color(self):
-        screen = self.vision.frame
-        # Get a small square on the bottom left, compare with names_color, assign
-        # the color that is the closest.
-        # Or use OCR to find the place of the words and then check the color there.
+        return players
+
+    def letter_from_img(self, img):
+        letter = self.letters_classifier.classify_letter(img)
+        if (letter[0] == None):
+            return '?'
+        return letter[0]
+
+    def save_letters_to_file(self, name_images, file_name):
+        last_index = 1
+        for img in name_images:
+            letters = self.separate_letters(img)
+            for letter in letters:
+                path = '/Users/gnardini/Documents/Code/fortnite-kda-viewer/dataset/screenshots/' + file_name + '-' + str(last_index) + '.png'
+                cv2.imwrite(path, letter)
+                last_index = last_index + 1
