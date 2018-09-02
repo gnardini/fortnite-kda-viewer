@@ -64,15 +64,17 @@ class GameScreen:
 
     def separate_images(self, img, fx):
         ans = []
-        imgs = fx(img)
+        diffs = []
+        (imgs, diff) = fx(img)
         while len(imgs) == 2:
             ans.append(imgs[0])
-            imgs = fx(imgs[1])
+            diffs.append(diff)
+            (imgs, diff) = fx(imgs[1])
         ans.append(imgs[0])
-        return ans
+        return (ans, diffs)
 
     def crop_by_empty_rows(self, img):
-        return self.separate_images(img, self.crop_by_empty_row)
+        return self.separate_images(img, self.crop_by_empty_row)[0]
 
     def crop_by_empty_row(self, img):
         max_consecutive_empty = 3
@@ -85,21 +87,21 @@ class GameScreen:
                 if first_row_empty == None:
                     first_row_empty = i
             elif consecutive_empty >= max_consecutive_empty:
-                return [img[:first_row_empty, :], img[i:, :]]
+                return ([img[:first_row_empty, :], img[i:, :]], consecutive_empty)
             else:
                 consecutive_empty = 0
                 first_row_empty = None
 
         if first_row_empty == None:
-            return [img]
+            return ([img], 0)
         else:
             # Should never happen.
             print('Something really bad happened. Please fix.')
             return [img[:first_row_empty, :]]
 
     def separate_letters(self, img):
-        letters = self.separate_images(img, self.separate_letter)
-        return [self.crop_image(l) for l in letters]
+        (letters, diffs) = self.separate_images(img, self.separate_letter)
+        return ([self.crop_image(l) for l in letters], diffs)
 
     # TODO: Make this and crop_by_empty_row generic.
     def separate_letter(self, img):
@@ -110,21 +112,27 @@ class GameScreen:
                 if col_is_empty:
                     first_col_empty = i
             elif not col_is_empty:
-                return [img[:, :first_col_empty], img[:, i:]]
+                return ([img[:, :first_col_empty], img[:, i:]], i - first_col_empty)
 
         if first_col_empty == None:
-            return [img]
+            return ([img], 0)
         else:
             # Should never happen.
             print('Something really bad happened. Please fix. :)')
-            return [img[:, :first_col_empty]]
+            return ([img[:, :first_col_empty]], 0)
 
     def player_names_from_img(self, player_imgs):
         players = []
         for player_img in player_imgs:
-            letters = self.separate_letters(player_img)
+            (letters, diffs) = self.separate_letters(player_img)
             letters = [self.letter_from_img(img) for img in letters]
-            player_name = ''.join(letters)
+            # Add spaces is too separated.
+            final_letters = [letters[0]]
+            for i in range(1, len(letters)):
+                if diffs[i-1] >= 6:
+                    final_letters.append(' ')
+                final_letters.append(letters[i])
+            player_name = ''.join(final_letters)
             if '?' not in player_name:
                 players.append(player_name)
 
@@ -139,7 +147,7 @@ class GameScreen:
     def save_letters_to_file(self, name_images, file_name):
         last_index = 1
         for img in name_images:
-            letters = self.separate_letters(img)
+            (letters, diffs) = self.separate_letters(img)
             for letter in letters:
                 path = '/Users/gnardini/Documents/Code/fortnite-kda-viewer/dataset/screenshots/' + file_name + '-' + str(last_index) + '.png'
                 cv2.imwrite(path, letter)
