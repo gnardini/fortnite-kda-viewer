@@ -28,32 +28,35 @@ class GameScreen:
 
         other_names_mask = self.apply_mask(rect, self.enemy_color_min, self.enemy_color_max)
         other_players = self.find_name_imgs(other_names_mask)
-        players = self.player_names_from_img(other_players)
+        players = self.player_names_from_img_info(other_players)
 
         player_kill_mask = self.apply_mask(rect, self.player_kill_min, self.player_kill_max)
         player_kill = self.find_name_imgs(player_kill_mask)
-        player_kill = self.player_names_from_img(player_kill)
+        player_kill = self.player_names_from_img_info(player_kill)
 
         player_death_mask = self.apply_mask(rect, self.player_death_min, self.player_death_max)
         player_death = self.find_name_imgs(player_death_mask)
-        player_death = self.player_names_from_img(player_death)
+        player_death = self.player_names_from_img_info(player_death)
 
         white_text_mask = self.apply_mask(rect, self.white_text_min, self.white_text_max, is_white = True)
         white_text_imgs = self.find_name_imgs(white_text_mask)
-        white_text = self.player_names_from_img(white_text_imgs, is_white = True, include_unknown = True)
+        # TODO: Extract player names from this (this is getting all text)
+        white_text = self.player_names_from_img_info(white_text_imgs, is_white = True, include_unknown = True)
 
+        player_kills = self.find_matching_players(player_kill, players)
+        # player_deaths = self.find_matching_players(player_death, players)
 
         if save_letters:
             self.save_letters_to_file(other_players, file_name)
 
         if print_mask:
             for i in range(len(white_text_imgs)):
-                print(self.player_names_from_img([white_text_imgs[i]], is_white = True, include_unknown = True))
+                print(self.player_names_from_img_info([white_text_imgs[i]], is_white = True, include_unknown = True))
                 cv2.imshow('image', white_text_imgs[i])
                 cv2.waitKey(0)
             cv2.destroyAllWindows()
 
-        return (players, white_text)
+        return (player_kills, [])
 
     def apply_mask(self, img, min, max, is_white=False):
          mask = cv2.inRange(img, np.array(min, dtype=np.uint8),
@@ -69,13 +72,13 @@ class GameScreen:
          return mask
 
     def find_name_imgs(self, img):
-        img = self.crop_image(img)
-        imgs = self.crop_by_empty_rows(img)
-        return list(map(self.crop_image, imgs))
+        (img, y) = self.crop_image(img)
+        imgs_info = self.crop_by_empty_rows(img, y)
+        return list(map(lambda img_info: self.crop_image(*img_info), imgs_info))
 
-    def crop_image(self, img):
+    def crop_image(self, img, prev_y=0):
         x,y,w,h = cv2.boundingRect(img)
-        return img[y:y+h, x:x+w]
+        return (img[y:y+h, x:x+w], y+prev_y)
 
     def separate_images(self, img, fx):
         ans = []
@@ -88,8 +91,15 @@ class GameScreen:
         ans.append(imgs[0])
         return (ans, diffs)
 
-    def crop_by_empty_rows(self, img):
-        return self.separate_images(img, self.crop_by_empty_row)[0]
+    # Returns a list of tuples: [(img, y_height)]
+    def crop_by_empty_rows(self, img, y):
+        (imgs, diffs) = self.separate_images(img, self.crop_by_empty_row)
+        rows_info = []
+        rows_info.append((imgs[0], y))
+        for i in range(1, len(imgs)):
+            # Y diff of previous img + height of previous img + distance between imgs.
+            rows_info.append((imgs[i], rows_info[-1][1] + imgs[i-1].shape[0] + diffs[i-1]))
+        return rows_info
 
     def crop_by_empty_row(self, img):
         max_consecutive_empty = 3
@@ -116,7 +126,7 @@ class GameScreen:
 
     def separate_letters(self, img):
         (letters, diffs) = self.separate_images(img, self.separate_letter)
-        return ([self.crop_image(l) for l in letters], diffs)
+        return ([self.crop_image(l)[0] for l in letters], diffs)
 
     # TODO: Make this and crop_by_empty_row generic.
     def separate_letter(self, img):
@@ -136,10 +146,11 @@ class GameScreen:
             print('Something really bad happened. Please fix. :)')
             return ([img[:, :first_col_empty]], 0)
 
-    def player_names_from_img(self, player_imgs, is_white=False, include_unknown=False):
+    # Returns a list of tuples of the type (text, y_height)
+    def player_names_from_img_info(self, imgs_info, is_white=False, include_unknown=True):
         players = []
-        for player_img in player_imgs:
-            (letters, diffs) = self.separate_letters(player_img)
+        for img_info in imgs_info:
+            (letters, diffs) = self.separate_letters(img_info[0])
             letters = [self.letter_from_img(img, is_white) for img in letters]
             # Add spaces if too separated.
             final_letters = [letters[0]]
@@ -149,7 +160,7 @@ class GameScreen:
                 final_letters.append(letters[i])
             player_name = ''.join(final_letters)
             if include_unknown or '?' not in player_name:
-                players.append(player_name)
+                players.append((player_name, img_info[1]))
 
         return players
 
@@ -167,3 +178,11 @@ class GameScreen:
                 path = '/Users/gnardini/Documents/Code/fortnite-kda-viewer/dataset/screenshots/' + file_name + '-' + str(last_index) + '.png'
                 cv2.imwrite(path, letter)
                 last_index = last_index + 1
+
+    def find_matching_players(self, player_info, other_players):
+        matching = []
+        for (player, y) in player_info:
+            for (other_player, other_y) in other_players:
+                if (abs(y - other_y) < 10):
+                    matching.append(other_player)
+        return matching
