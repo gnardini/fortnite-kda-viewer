@@ -26,35 +26,34 @@ class GameScreen:
         height = shape[0]//4
         rect = screen[(shape[0]-height*3//2):shape[0]-height//2, 0:shape[1]//4]
 
-        # other_names_mask = self.apply_mask(rect, self.enemy_color_min, self.enemy_color_max)
-        # other_players = self.find_name_imgs(other_names_mask)
-        # players = self.player_names_from_img(other_players)
-        #
-        # player_kill_mask = self.apply_mask(rect, self.player_kill_min, self.player_kill_max)
-        # player_kill = self.find_name_imgs(player_kill_mask)
-        # player_kill = self.player_names_from_img(player_kill)
-        #
-        # player_death_mask = self.apply_mask(rect, self.player_death_min, self.player_death_max)
-        # player_death = self.find_name_imgs(player_death_mask)
-        # player_death = self.player_names_from_img(player_death)
+        other_names_mask = self.apply_mask(rect, self.enemy_color_min, self.enemy_color_max)
+        other_players = self.find_name_imgs(other_names_mask)
+        players = self.player_names_from_img(other_players)
+
+        player_kill_mask = self.apply_mask(rect, self.player_kill_min, self.player_kill_max)
+        player_kill = self.find_name_imgs(player_kill_mask)
+        player_kill = self.player_names_from_img(player_kill)
+
+        player_death_mask = self.apply_mask(rect, self.player_death_min, self.player_death_max)
+        player_death = self.find_name_imgs(player_death_mask)
+        player_death = self.player_names_from_img(player_death)
 
         white_text_mask = self.apply_mask(rect, self.white_text_min, self.white_text_max, is_white = True)
         white_text_imgs = self.find_name_imgs(white_text_mask)
-        white_text = self.player_names_from_img(white_text_imgs, is_white = True)
+        white_text = self.player_names_from_img(white_text_imgs, is_white = True, include_unknown = True)
 
 
         if save_letters:
-            self.save_letters_to_file(white_text_imgs, file_name)
+            self.save_letters_to_file(other_players, file_name)
 
         if print_mask:
             for i in range(len(white_text_imgs)):
-                print(self.player_names_from_img([white_text_imgs[i]], is_white = True))
+                print(self.player_names_from_img([white_text_imgs[i]], is_white = True, include_unknown = True))
                 cv2.imshow('image', white_text_imgs[i])
                 cv2.waitKey(0)
             cv2.destroyAllWindows()
 
-        # return players
-        return white_text
+        return (players, white_text)
 
     def apply_mask(self, img, min, max, is_white=False):
          mask = cv2.inRange(img, np.array(min, dtype=np.uint8),
@@ -137,7 +136,7 @@ class GameScreen:
             print('Something really bad happened. Please fix. :)')
             return ([img[:, :first_col_empty]], 0)
 
-    def player_names_from_img(self, player_imgs, is_white=False):
+    def player_names_from_img(self, player_imgs, is_white=False, include_unknown=False):
         players = []
         for player_img in player_imgs:
             (letters, diffs) = self.separate_letters(player_img)
@@ -149,7 +148,7 @@ class GameScreen:
                     final_letters.append(' ')
                 final_letters.append(letters[i])
             player_name = ''.join(final_letters)
-            if '?' not in player_name:
+            if include_unknown or '?' not in player_name:
                 players.append(player_name)
 
         return players

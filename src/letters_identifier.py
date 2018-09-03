@@ -27,11 +27,12 @@ for file in os.listdir(path + screenshots_dir):
     if not file.endswith('.json') and not file in parsed_files:
         file_path = path + screenshots_dir + '/' + file
         img = cv2.imread(file_path, 0)
-        if (img.shape == None):
+        if (img is None or img.shape == None):
             os.remove(file_path)
+            continue
         print(file)
         letter = classifier.classify_letter(img, mapping = mapping, is_white = white_mapping)
-        if letter[1] <= .02:
+        if letter[1] <= .035:
             print('Found a ' + letter[0] + ' with error ' + str(letter[1]))
             os.remove(file_path)
             continue
@@ -40,14 +41,31 @@ for file in os.listdir(path + screenshots_dir):
         bordersize = 3
         border = cv2.copyMakeBorder(img, top=bordersize, bottom=bordersize, left=bordersize, right=bordersize, borderType=cv2.BORDER_CONSTANT, value=[0])
         cv2.imshow('image', border)
-        character = chr(cv2.waitKey(0))
+
+        val = cv2.waitKey(0)
+        if val == 13: # 13 is enter key.
+            buffer = []
+            val = 0
+            while True:
+                val = cv2.waitKey(0)
+                if val == 13:
+                    break
+                buffer.append(chr(val))
+            character = ''.join(buffer)
+        elif val == 127: # Backspace key.
+            print('Removing file %s' % file)
+            os.remove(file_path)
+            continue
+        else:
+            character = chr(val)
+        print(character)
         while character == '/':
             to_delete = used.pop()
             deleted = mapping[to_delete].pop()
             print('Removed file %s from letter %s' % (deleted, to_delete))
             character = chr(cv2.waitKey(0))
         print(character)
-        if character == '.':
+        if character == '*':
             break
         elif character == ',':
             continue
