@@ -15,12 +15,12 @@ class GameScreenTests(unittest.TestCase):
         print()
         # 37, 39, 40, 50, 55
         # last = 97
-        min = 135
-        max = 135
+        min = 2
+        max = 6
         i = min
         while i <= max:
             file = 'screenshot' + str(i)
-            self.read_image('screenshots/%s.png' % file)
+            self.read_image('%s.png' % file)
             players_info = self.game_screen.find_players(print_mask=False, save_letters=False, file_name='white/' + file)
             print('-----')
             print('File %s' % file)
@@ -30,7 +30,7 @@ class GameScreenTests(unittest.TestCase):
             i = i+1
 
     def read_image(self, path):
-        file_path = os.path.join(os.path.split(__file__)[0], path)
+        file_path = os.path.join(os.path.split(__file__)[0], 'screenshots', path)
         img = cv2.imread(file_path)
         print(file_path)
         self.vision.frame = img
