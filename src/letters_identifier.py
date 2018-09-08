@@ -24,7 +24,7 @@ cv2.namedWindow('image', cv2.WINDOW_NORMAL)
 
 used = []
 for file in os.listdir(path + screenshots_dir):
-    if not file.endswith('.json') and not file in parsed_files:
+    if not file.endswith('.json')  and not file.endswith('white') and not file in parsed_files:
         file_path = path + screenshots_dir + '/' + file
         img = cv2.imread(file_path, 0)
         if (img is None or img.shape == None):
@@ -32,7 +32,7 @@ for file in os.listdir(path + screenshots_dir):
             continue
         print(file)
         letter = classifier.classify_letter(img, mapping = mapping, is_white = white_mapping)
-        if letter[1] <= .035:
+        if letter[1] <= .05:
             print('Found a ' + letter[0] + ' with error ' + str(letter[1]))
             os.remove(file_path)
             continue
