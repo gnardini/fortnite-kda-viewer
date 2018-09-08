@@ -32,4 +32,5 @@ class GameScreenTests(unittest.TestCase):
     def read_image(self, path):
         file_path = os.path.join(os.path.split(__file__)[0], path)
         img = cv2.imread(file_path)
+        print(file_path)
         self.vision.frame = img

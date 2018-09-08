@@ -1,16 +1,17 @@
 import numpy as np
 import cv2
 import json
+import os
 from operator import mul
 
 class LettersClassifier:
 
     def __init__(self):
-        self.path = '/Users/gnardini/Documents/Code/fortnite-kda-viewer/dataset/'
-        with open(self.path + 'mapping.json') as f:
+        self.path = os.path.join(os.path.split(os.path.split(__file__)[0])[0], "dataset")
+        with open(os.path.join(self.path,'mapping.json')) as f:
             json_data = f.read()
             self.mapping = json.loads(json_data)
-        with open(self.path + 'white_mapping.json') as f:
+        with open(os.path.join(self.path,'white_mapping.json')) as f:
             json_data = f.read()
             self.white_mapping = json.loads(json_data)
 
@@ -26,10 +27,10 @@ class LettersClassifier:
         letter = None
         for k in mapping:
             for file in mapping[k]:
-                path = self.path + 'screenshots/'
+                path = os.path.join(self.path,"screenshots")
                 if is_white:
-                    path = path + 'white/'
-                other_img = cv2.imread(path + file, 0)
+                    path = os.path.join(path, 'white')
+                other_img = cv2.imread(os.path.join(path, file), 0)
                 dist = self.images_distance(img, other_img)
                 # Just searching for a letter, feel free to fix this log.
                 if log and (dist < .1 or (dist < 1 and k == 'i')):

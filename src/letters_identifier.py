@@ -5,15 +5,15 @@ from pprint import pprint
 import letters_classifier
 
 white_mapping = True
-path = '/Users/gnardini/Documents/Code/fortnite-kda-viewer/dataset/'
+path = os.path.join(os.path.split(os.path.split(__file__)[0])[0], "dataset")
 screenshots_dir = 'screenshots'
 mapping_file = 'mapping.json'
 if white_mapping:
     mapping_file = 'white_mapping.json'
-    screenshots_dir = screenshots_dir + '/white'
+    screenshots_dir = os.path.join(screenshots_dir, 'white')
 
 
-json_data = open(path + mapping_file).read()
+json_data = open(os.path.join(path, mapping_file)).read()
 mapping = json.loads(json_data)
 classifier = letters_classifier.LettersClassifier()
 parsed_files = []
@@ -25,7 +25,7 @@ cv2.namedWindow('image', cv2.WINDOW_NORMAL)
 used = []
 for file in os.listdir(path + screenshots_dir):
     if not file.endswith('.json')  and not file.endswith('white') and not file in parsed_files:
-        file_path = path + screenshots_dir + '/' + file
+        file_path = os.path.join(path, screenshots_dir, file)
         img = cv2.imread(file_path, 0)
         if (img is None or img.shape == None):
             os.remove(file_path)
@@ -75,6 +75,6 @@ for file in os.listdir(path + screenshots_dir):
                 mapping[character] = []
             mapping[character].append(file)
 
-with open(path + mapping_file, 'w') as outfile:
+with open(os.path.join(path, mapping_file), 'w') as outfile:
     json.dump(mapping, outfile, indent=4, sort_keys=True)
 cv2.destroyAllWindows()

@@ -197,11 +197,12 @@ class GameScreen:
         return letter[0]
 
     def save_letters_to_file(self, images_info, file_name, current_index = 1):
+        screenshots_path = os.path.join(os.path.split(os.path.split(__file__)[0])[0], "dataset", "screenshots")
         name_images = [image_info[0] for image_info in images_info]
         for img in name_images:
             (letters, diffs) = self.separate_letters(img)
             for letter in letters:
-                path = '/Users/gnardini/Documents/Code/fortnite-kda-viewer/dataset/screenshots/' + file_name + '-' + str(current_index) + '.png'
+                path = os.path.join(screenshots_path, file_name + '-' + str(current_index) + '.png')
                 cv2.imwrite(path, letter)
                 current_index = current_index + 1
         return current_index
