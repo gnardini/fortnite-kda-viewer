@@ -4,6 +4,7 @@ import cv2
 from PIL import Image
 import os
 import random
+from difflib import SequenceMatcher
 
 class GameScreen:
     def __init__(self, vision, letters_classifier):
@@ -33,7 +34,7 @@ class GameScreen:
         player_kill_mask = self.apply_mask(rect, self.player_kill_min, self.player_kill_max)
         player_kill_imgs = self.find_word_imgs(player_kill_mask)
         # TODO: Don't need the following line every screenshot. Info is always the same.
-        player_kills = self.text_from_imgs_info(player_kill_imgs)
+        player_kills_info = self.text_from_imgs_info(player_kill_imgs)
 
         player_death_mask = self.apply_mask(rect, self.player_death_min, self.player_death_max)
         player_death_imgs = self.find_word_imgs(player_death_mask)
@@ -45,8 +46,14 @@ class GameScreen:
         white_players = [(self.player_from_white_text(text_info[0]), text_info[1]) for text_info in  white_text]
         white_players = list(filter(lambda player_info: player_info[0] != None, white_players))
 
+        # print('--------------')
+        # print('Player kills: %s' % player_kills_info)
+        # print('Player deaths: %s' % player_deaths_info)
+        # print('Other players: %s' % other_players)
+        # print('White players: %s' % white_text)
+        # print('--------------')
 
-        player_kills = self.find_kills(player_kills, other_players)
+        player_kills = self.find_kills(player_kills_info, other_players)
         player_deaths = self.find_kills(white_players, player_deaths_info)
         other_kills = self.find_kills(white_players, other_players)
 
@@ -62,13 +69,6 @@ class GameScreen:
             cv2.waitKey(0)
             cv2.destroyAllWindows()
 
-        # print('--------------')
-        # print('Player kills: %s' % player_kills)
-        # print('Player kills: %s' % player_deaths)
-        # print('Other players: %s' % other_players)
-        print('White players: %s' % white_text)
-        # print('--------------')
-
         return {
             'player_kills': player_kills,
             'player_deaths': player_deaths,
@@ -82,10 +82,6 @@ class GameScreen:
          mask = cv2.cvtColor(mask,cv2.COLOR_BGR2GRAY)
 
          ignore,mask = cv2.threshold(mask,1,255,cv2.THRESH_BINARY)
-
-         if is_white:
-             mask = cv2.dilate(mask, np.ones((2, 2),np.uint8))
-             mask = cv2.erode(mask, np.ones((2, 2),np.uint8))
          return mask
 
     def find_word_imgs(self, img):
@@ -184,11 +180,23 @@ class GameScreen:
     def player_from_white_text(self, text):
         eliminated_words = ['shotgunned', 'bludgeoned', 'nearly.sploded', 'sploded', 'sniped', 'knocked out',
             'finally eliminated', 'finallyeliminated', 'eliminated', 'nearly cleared out']
-        for eliminated_word in eliminated_words:
-            index = text.find(eliminated_word)
-            if index >= 3:
-                return text[:index-1]
+        eliminated_words = [word.split(' ') for word in eliminated_words]
+        words = text.split(' ')
+        for eliminated_word_array in eliminated_words:
+            for words_index in range(len(words)):
+                if self.phrase_contains_words(words[words_index:], eliminated_word_array):
+                    return ' '.join(words[:words_index])
         return None
+
+    def phrase_contains_words(self, phrase, eliminated_words):
+        for phrase_word_index in range(len(phrase)):
+            if phrase_word_index >= len(eliminated_words):
+                return True
+            if not self.words_are_similar(phrase[phrase_word_index], eliminated_words[phrase_word_index]):
+                return False
+
+    def words_are_similar(self, word1, word2):
+        return SequenceMatcher(None, word1, word2).ratio() >= .75
 
     def letter_from_img(self, img, is_white=False, log=False):
         letter = self.letters_classifier.classify_letter(img, is_white = is_white, log=log)

@@ -15,8 +15,8 @@ class GameScreenTests(unittest.TestCase):
         print()
         # 37, 39, 40, 50, 55
         # last = 97
-        min = 2
-        max = 6
+        min = 130
+        max = 130
         i = min
         while i <= max:
             file = 'screenshot' + str(i)
@@ -29,8 +29,13 @@ class GameScreenTests(unittest.TestCase):
                 print('%s killed: %s' % kill)
             i = i+1
 
+    def test_player_from_text(self):
+        self.assertEqual('pepito', self.game_screen.player_from_white_text('pepito shotgunned someone else'))
+        self.assertEqual('pepito capo', self.game_screen.player_from_white_text('pepito capo sploded someone else'))
+        self.assertEqual('pepito', self.game_screen.player_from_white_text('pepito eljmlnated someone else'))
+        self.assertEqual('pepito', self.game_screen.player_from_white_text('pepito bludgoneddd someone else'))
+
     def read_image(self, path):
         file_path = os.path.join(os.path.split(__file__)[0], 'screenshots', path)
         img = cv2.imread(file_path)
-        print(file_path)
         self.vision.frame = img
