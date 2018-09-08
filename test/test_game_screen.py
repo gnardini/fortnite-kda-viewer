@@ -15,13 +15,13 @@ class GameScreenTests(unittest.TestCase):
         print()
         # 37, 39, 40, 50, 55
         # last = 97
-        min = 130
-        max = 130
+        min = 118
+        max = 118
         i = min
         while i <= max:
             file = 'screenshot' + str(i)
             self.read_image('%s.png' % file)
-            players_info = self.game_screen.find_players(print_mask=False, save_letters=False, file_name='white/' + file)
+            players_info = self.game_screen.find_players(print_mask=True, save_letters=False, file_name='white/' + file)
             print('-----')
             print('File %s' % file)
             all_kills = players_info['player_kills'] + players_info['player_deaths'] + players_info['other_kills']
@@ -34,6 +34,10 @@ class GameScreenTests(unittest.TestCase):
         self.assertEqual('pepito capo', self.game_screen.player_from_white_text('pepito capo sploded someone else'))
         self.assertEqual('pepito', self.game_screen.player_from_white_text('pepito eljmlnated someone else'))
         self.assertEqual('pepito', self.game_screen.player_from_white_text('pepito bludgoneddd someone else'))
+        self.assertEqual('pepito', self.game_screen.player_from_white_text('pepito nearly claared out someone else'))
+        self.assertEqual('pepito', self.game_screen.player_from_white_text('pepito finallyeliminated'))
+        self.assertEqual('pepito', self.game_screen.player_from_white_text('pepito shotgunned'))
+        self.assertEqual('pepito', self.game_screen.player_from_white_text('pepito nearly .sploded (60 m)'))
 
     def read_image(self, path):
         file_path = os.path.join(os.path.split(__file__)[0], 'screenshots', path)

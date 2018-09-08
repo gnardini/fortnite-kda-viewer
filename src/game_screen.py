@@ -161,6 +161,9 @@ class GameScreen:
 
     # Returns a list of tuples of the type (text, y_height)
     def text_from_imgs_info(self, imgs_info, is_white=False, include_unknown=True, log=False):
+        pixels_for_spaces = 6
+        if is_white:
+            pixels_for_spaces = 5
         players = []
         for img_info in imgs_info:
             (letters, diffs) = self.separate_letters(img_info[0])
@@ -168,7 +171,7 @@ class GameScreen:
             # Add spaces if too separated.
             final_letters = [letters[0]]
             for i in range(1, len(letters)):
-                if diffs[i-1] >= 6:
+                if diffs[i-1] >= pixels_for_spaces:
                     final_letters.append(' ')
                 final_letters.append(letters[i])
             player_name = ''.join(final_letters)
@@ -178,8 +181,9 @@ class GameScreen:
         return players
 
     def player_from_white_text(self, text):
-        eliminated_words = ['shotgunned', 'bludgeoned', 'nearly.sploded', 'sploded', 'sniped', 'knocked out',
-            'finally eliminated', 'finallyeliminated', 'eliminated', 'nearly cleared out']
+        eliminated_words = ['shotgunned', 'bludgeoned', 'nearly.sploded', 'nearly .sploded',
+            'sploded', 'sniped', 'knocked out', 'finally eliminated', 'finallyeliminated',
+            'eliminated', 'nearly cleared out']
         eliminated_words = [word.split(' ') for word in eliminated_words]
         words = text.split(' ')
         for eliminated_word_array in eliminated_words:
@@ -194,6 +198,7 @@ class GameScreen:
                 return True
             if not self.words_are_similar(phrase[phrase_word_index], eliminated_words[phrase_word_index]):
                 return False
+        return True
 
     def words_are_similar(self, word1, word2):
         return SequenceMatcher(None, word1, word2).ratio() >= .75
