@@ -6,7 +6,7 @@ import numpy as np
 
 path = '/Users/gnardini/Documents/Code/fortnite-kda-viewer/dataset/'
 
-letter = 'p'
+letter = 't'
 if len(sys.argv) > 1:
     letter = sys.argv[1]
 

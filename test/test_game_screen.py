@@ -14,15 +14,19 @@ class GameScreenTests(unittest.TestCase):
     def test_find_players(self):
         print()
         # 37, 39, 40, 50, 55
-        i = 2
-        while i <= 6:
+        # last = 97
+        min = 135
+        max = 135
+        i = min
+        while i <= max:
             file = 'screenshot' + str(i)
             self.read_image('screenshots/%s.png' % file)
-            players_info = self.game_screen.find_players(print_mask=False, save_letters=False, file_name=file)
+            players_info = self.game_screen.find_players(print_mask=False, save_letters=False, file_name='white/' + file)
             print('-----')
             print('File %s' % file)
-            print('Players killed: %s' % players_info[0])
-            print('Killed by: %s' % players_info[1])
+            all_kills = players_info['player_kills'] + players_info['player_deaths'] + players_info['other_kills']
+            for kill in all_kills:
+                print('%s killed: %s' % kill)
             i = i+1
 
     def read_image(self, path):

@@ -17,7 +17,7 @@ class LettersClassifier:
 
         self.max_threshold = .05
 
-    def classify_letter(self, img, is_white=False, mapping=None):
+    def classify_letter(self, img, is_white=False, mapping=None, log=False):
         if mapping == None:
             if is_white:
                 mapping = self.white_mapping
@@ -32,6 +32,9 @@ class LettersClassifier:
                     path = os.path.join(path, 'white')
                 other_img = cv2.imread(os.path.join(path, file), 0)
                 dist = self.images_distance(img, other_img)
+                # Just searching for a letter, feel free to fix this log.
+                if log and (dist < .1 or (dist < 1 and k == 'i')):
+                    print('Distance from %s: %f' % (k, dist))
                 if dist < min:
                     min = dist
                     letter = k
