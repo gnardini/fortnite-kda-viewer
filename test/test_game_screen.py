@@ -14,8 +14,8 @@ class GameScreenTests(unittest.TestCase):
     def test_find_players(self):
         print()
         # 37, 39, 40, 50, 55
-        i = 37
-        while i <= 40:
+        i = 2
+        while i <= 6:
             file = 'screenshot' + str(i)
             self.read_image('screenshots/%s.png' % file)
             players_info = self.game_screen.find_players(print_mask=False, save_letters=False, file_name=file)
@@ -28,4 +28,5 @@ class GameScreenTests(unittest.TestCase):
     def read_image(self, path):
         file_path = os.path.join(os.path.split(__file__)[0], path)
         img = cv2.imread(file_path)
+        print(file_path)
         self.vision.frame = img
