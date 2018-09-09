@@ -8,14 +8,16 @@ import string
 class LettersClassifier:
 
     def __init__(self):
-        self.path = os.path.join(os.path.split(os.path.split(__file__)[0])[0], 'dataset')
-        with open(os.path.join(self.path,'mapping.json')) as f:
+        path = os.path.join(os.path.split(os.path.split(__file__)[0])[0], 'dataset')
+        screenshots_path = os.path.join(path, 'screenshots')
+        with open(os.path.join(path,'mapping.json')) as f:
             json_data = f.read()
             self.mapping = json.loads(json_data)
-        with open(os.path.join(self.path,'white_mapping.json')) as f:
+            self.mapping_images = self.load_images(self.mapping, screenshots_path)
+        with open(os.path.join(path,'white_mapping.json')) as f:
             json_data = f.read()
             self.white_mapping = json.loads(json_data)
-        self.path = os.path.join(self.path, 'screenshots')
+            self.white_mapping_images = self.load_images(self.white_mapping, os.path.join(screenshots_path, 'white'))
         self.max_threshold = .05
         self.most_used_letters = ['a', 'e', 'i', 'o', 'u', 'n', 's', 'r', 'h', 'l', 'm']
         self.most_used_letters = self.most_used_letters + [letter.upper() for letter in self.most_used_letters]
@@ -28,28 +30,27 @@ class LettersClassifier:
         if mapping == None:
             if is_white:
                 mapping = self.white_mapping
+                imgs_mapping = self.white_mapping_images
                 common_letters = self.common_white_letters
                 uncommon_letters = self.uncommon_white_letters
             else:
                 mapping = self.mapping
+                imgs_mapping = self.mapping_images
                 common_letters = self.common_letters
                 uncommon_letters = self.uncommon_letters
-        path = self.path
-        if is_white:
-            path = os.path.join(path, 'white')
 
-        (letter, lowest_dist) = self.find_best_letter(img, common_letters, mapping, path, log)
+        (letter, lowest_dist) = self.find_best_letter(img, common_letters, mapping, imgs_mapping, log)
         if lowest_dist < self.max_threshold:
             return (letter, lowest_dist)
-        other_letter, dist = self.find_best_letter(img, uncommon_letters, mapping, path, log)
+        other_letter, dist = self.find_best_letter(img, uncommon_letters, mapping, imgs_mapping, log)
 
         return (letter, min(lowest_dist, dist))
 
-    def find_best_letter(self, img, letters, mapping, path, log=False):
+    def find_best_letter(self, img, letters, mapping, img_mapping, log=False):
         letter = None
         lowest_dist = 1
         for k in letters:
-            dist = self.find_lowest_distance(img, mapping, k, path, log)
+            dist = self.find_lowest_distance(img, mapping, img_mapping, k, log)
             if dist < lowest_dist:
                 if dist < self.max_threshold:
                     return (letter, dist)
@@ -57,10 +58,10 @@ class LettersClassifier:
                 letter = k
         return (letter, lowest_dist)
 
-    def find_lowest_distance(self, img, mapping, letter, path, log=False):
+    def find_lowest_distance(self, img, mapping, img_mapping, letter, log=False):
         min = 1
         for file in mapping[letter]:
-            other_img = cv2.imread(os.path.join(path, file), 0)
+            other_img = img_mapping[file]
             dist = self.images_distance(img, other_img)
             # Just searching for a letter, feel free to fix this log.
             if log and (dist < .1 or (dist < 1 and letter == 'i')):
@@ -169,3 +170,10 @@ class LettersClassifier:
 
 
         return combinations
+
+    def load_images(self, mapping, path):
+        images = {}
+        for letter in mapping:
+            for file in mapping[letter]:
+                images[file] = cv2.imread(os.path.join(path, file), 0)
+        return images

@@ -4,6 +4,7 @@ from src import letters_classifier as c
 import os
 import cv2
 import unittest
+import time
 
 class GameScreenTests(unittest.TestCase):
     def setUp(self):
@@ -14,21 +15,29 @@ class GameScreenTests(unittest.TestCase):
     # 118 benchmark:
     # Original: 1.331464
     # Common letters first: 0.645694
+    # Cache images: 0.084836
     def test_find_players(self):
         print()
-        min = 118
-        max = 118
+        min = 1
+        max = 145
         i = min
+        times = 0
         while i <= max:
             file = 'screenshot' + str(i)
             self.read_image('%s.png' % file)
+
+            start = time.perf_counter()
             players_info = self.game_screen.find_players(print_mask=False, save_letters=False, file_name='white/' + file)
+            time_diff = time.perf_counter() - start
+            times = times + time_diff
             print('-----')
-            print('File %s' % file)
-            all_kills = players_info['player_kills'] + players_info['player_deaths'] + players_info['other_kills']
-            for kill in all_kills:
-                print('%s killed: %s' % kill)
+            print('File %s took %f' % (file, time_diff))
+
+            # all_kills = players_info['player_kills'] + players_info['player_deaths'] + players_info['other_kills']
+            # for kill in all_kills:
+                # print('%s killed: %s' % kill)
             i = i+1
+        print('Average: %f' % (times / max))
 
     def test_player_from_text(self):
         self.assertEqual('pepito', self.game_screen.player_from_white_text('pepito shotgunned someone else'))
