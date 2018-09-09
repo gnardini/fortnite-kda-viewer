@@ -1,0 +1,3 @@
+; Please rename this file to config.ini and set your keys for the app to work.
+[DEFAULT]
+TRN_KEY = Your key goes here

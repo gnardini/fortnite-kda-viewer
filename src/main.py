@@ -3,13 +3,16 @@ import vision as v
 import fortnite_api as fa
 import output_screen as os
 import time
+import configparser
 
 def log(self, text):
     print('[%s] %s' % (time.strftime('%H:%M:%S'), text))
 
+config = configparser.ConfigParser()
+config.read('config.ini')
 vision = v.Vision()
 gamescreen = gs.GameScreen(vision)
-api = fa.FortniteApi()
+api = fa.FortniteApi(config)
 screen = os.OutputScreen(vision)
 
 kdas = {}
@@ -24,10 +27,10 @@ while(True):
             print("%s: %d"  % (player, kda))
             kdas[player] = {
                 'kda': kda,
-                'timestamp': time.thetime # Search for API.
+                'timestamp': time.perf_counter()
             }
-    min_timstamp = time.thetime - time.5seconds
+    min_timstamp = time.perf_counter() - 5
     players_to_show = filter(kdas, lambda x: x.timestamp >= min_timstamp)
     screen.show_players(players_to_show)
     # Sleep only 5 seconds while in game but more time when not in game.
-    sleep(5)
+    time.sleep(5)
