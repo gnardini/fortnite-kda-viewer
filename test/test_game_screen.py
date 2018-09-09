@@ -12,14 +12,10 @@ class GameScreenTests(unittest.TestCase):
         self.classifier = c.LettersClassifier()
         self.game_screen = gs.GameScreen(self.vision, self.classifier)
 
-    # 118 benchmark:
-    # Original: 1.331464
-    # Common letters first: 0.645694
-    # Cache images: 0.084836
     def test_find_players(self):
         print()
         min = 1
-        max = 145
+        max = 1
         i = min
         times = 0
         while i <= max:

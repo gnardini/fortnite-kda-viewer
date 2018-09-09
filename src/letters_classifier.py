@@ -18,7 +18,7 @@ class LettersClassifier:
             json_data = f.read()
             self.white_mapping = json.loads(json_data)
             self.white_mapping_images = self.load_images(self.white_mapping, os.path.join(screenshots_path, 'white'))
-        self.max_threshold = .05
+        self.max_threshold = .02
         self.most_used_letters = ['a', 'e', 'i', 'o', 'u', 'n', 's', 'r', 'h', 'l', 'm']
         self.most_used_letters = self.most_used_letters + [letter.upper() for letter in self.most_used_letters]
         self.common_letters = [key for key in self.most_used_letters if key in self.mapping.keys()]
@@ -27,24 +27,26 @@ class LettersClassifier:
         self.uncommon_white_letters = [key for key in self.white_mapping.keys() if key not in self.most_used_letters]
 
     def classify_letter(self, img, is_white=False, mapping=None, log=False):
-        if mapping == None:
-            if is_white:
-                mapping = self.white_mapping
-                imgs_mapping = self.white_mapping_images
-                common_letters = self.common_white_letters
-                uncommon_letters = self.uncommon_white_letters
-            else:
-                mapping = self.mapping
-                imgs_mapping = self.mapping_images
-                common_letters = self.common_letters
-                uncommon_letters = self.uncommon_letters
+        if is_white:
+            mapping = self.white_mapping
+            imgs_mapping = self.white_mapping_images
+            common_letters = self.common_white_letters
+            uncommon_letters = self.uncommon_white_letters
+        else:
+            mapping = self.mapping
+            imgs_mapping = self.mapping_images
+            common_letters = self.common_letters
+            uncommon_letters = self.uncommon_letters
 
         (letter, lowest_dist) = self.find_best_letter(img, common_letters, mapping, imgs_mapping, log)
         if lowest_dist < self.max_threshold:
             return (letter, lowest_dist)
         other_letter, dist = self.find_best_letter(img, uncommon_letters, mapping, imgs_mapping, log)
+        if dist < lowest_dist:
+            lowest_dist = dist
+            letter = other_letter
 
-        return (letter, min(lowest_dist, dist))
+        return (letter, lowest_dist)
 
     def find_best_letter(self, img, letters, mapping, img_mapping, log=False):
         letter = None
@@ -53,7 +55,7 @@ class LettersClassifier:
             dist = self.find_lowest_distance(img, mapping, img_mapping, k, log)
             if dist < lowest_dist:
                 if dist < self.max_threshold:
-                    return (letter, dist)
+                    return (k, dist)
                 lowest_dist = dist
                 letter = k
         return (letter, lowest_dist)
