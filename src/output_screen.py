@@ -7,3 +7,4 @@ class OutputScreen:
 
     def show_players(self, players_kda):
         # Show a list with the info in |players_kda|.
+        return

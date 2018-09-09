@@ -24,23 +24,20 @@ class GameScreen:
         screen = self.vision.frame
         shape = screen.shape
 
-        height = shape[0]//4
-        rect = screen[(shape[0]-height*3//2):shape[0]-height//2, 0:shape[1]//4]
-
-        other_names_mask = self.apply_mask(rect, self.enemy_color_min, self.enemy_color_max)
+        other_names_mask = self.apply_mask(screen, self.enemy_color_min, self.enemy_color_max)
         other_players_imgs = self.find_word_imgs(other_names_mask)
         other_players = self.text_from_imgs_info(other_players_imgs)
 
-        player_kill_mask = self.apply_mask(rect, self.player_kill_min, self.player_kill_max)
+        player_kill_mask = self.apply_mask(screen, self.player_kill_min, self.player_kill_max)
         player_kill_imgs = self.find_word_imgs(player_kill_mask)
         # TODO: Don't need the following line every screenshot. Info is always the same.
         player_kills_info = self.text_from_imgs_info(player_kill_imgs)
 
-        player_death_mask = self.apply_mask(rect, self.player_death_min, self.player_death_max)
+        player_death_mask = self.apply_mask(screen, self.player_death_min, self.player_death_max)
         player_death_imgs = self.find_word_imgs(player_death_mask)
         player_deaths_info = self.text_from_imgs_info(player_death_imgs)
 
-        white_text_mask = self.apply_mask(rect, self.white_text_min, self.white_text_max, is_white = True)
+        white_text_mask = self.apply_mask(screen, self.white_text_min, self.white_text_max, is_white = True)
         white_text_imgs = self.find_word_imgs(white_text_mask)
         white_text = self.text_from_imgs_info(white_text_imgs, is_white = True)
         white_players = [(self.player_from_white_text(text_info[0]), text_info[1]) for text_info in  white_text]
