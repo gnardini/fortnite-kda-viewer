@@ -11,17 +11,18 @@ class GameScreenTests(unittest.TestCase):
         self.classifier = c.LettersClassifier()
         self.game_screen = gs.GameScreen(self.vision, self.classifier)
 
+    # 118 benchmark:
+    # Original: 1.331464
+    # Common letters first: 0.645694
     def test_find_players(self):
         print()
-        # 37, 39, 40, 50, 55
-        # last = 97
         min = 118
         max = 118
         i = min
         while i <= max:
             file = 'screenshot' + str(i)
             self.read_image('%s.png' % file)
-            players_info = self.game_screen.find_players(print_mask=True, save_letters=False, file_name='white/' + file)
+            players_info = self.game_screen.find_players(print_mask=False, save_letters=False, file_name='white/' + file)
             print('-----')
             print('File %s' % file)
             all_kills = players_info['player_kills'] + players_info['player_deaths'] + players_info['other_kills']

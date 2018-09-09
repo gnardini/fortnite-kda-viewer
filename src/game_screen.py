@@ -4,6 +4,7 @@ import cv2
 from PIL import Image
 import os
 import random
+import time
 from difflib import SequenceMatcher
 
 class GameScreen:
@@ -37,11 +38,29 @@ class GameScreen:
         player_death_imgs = self.find_word_imgs(player_death_mask)
         player_deaths_info = self.text_from_imgs_info(player_death_imgs)
 
+        start = time.perf_counter()
+        start_all = start
+
         white_text_mask = self.apply_mask(screen, self.white_text_min, self.white_text_max, is_white = True)
+
+        print('mask: %f' % (time.perf_counter() - start))
+        start = time.perf_counter()
+
         white_text_imgs = self.find_word_imgs(white_text_mask)
+
+        print('word_imgs: %f' % (time.perf_counter() - start))
+        start = time.perf_counter()
+
         white_text = self.text_from_imgs_info(white_text_imgs, is_white = True)
+
+        print('text_from_imgs: %f' % (time.perf_counter() - start))
+        start = time.perf_counter()
+
         white_players = [(self.player_from_white_text(text_info[0]), text_info[1]) for text_info in  white_text]
         white_players = list(filter(lambda player_info: player_info[0] != None, white_players))
+
+        print('players_from_text: %f' % (time.perf_counter() - start))
+        print('All: %f' % (time.perf_counter() - start_all))
 
         # print('--------------')
         # print('Player kills: %s' % player_kills_info)
