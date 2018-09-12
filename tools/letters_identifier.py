@@ -2,7 +2,7 @@ import os
 import cv2
 import json
 from pprint import pprint
-import letters_classifier
+from src import letters_classifier
 
 white_mapping = True
 path = os.path.join(os.path.split(os.path.split(__file__)[0])[0], "dataset")
@@ -31,7 +31,7 @@ for file in os.listdir(os.path.join(path, screenshots_dir)):
             continue
         print(file)
         letter = classifier.classify_letter(img, mapping = mapping, is_white = white_mapping)
-        if letter[1] <= .035:
+        if letter[1] <= .03:
             print('Found a ' + letter[0] + ' with error ' + str(letter[1]))
             os.remove(file_path)
             continue
