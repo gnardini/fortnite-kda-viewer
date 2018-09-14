@@ -27,3 +27,7 @@ class Vision:
 
         img = self.convert_rgb_to_bgr(img)
         return img
+
+    def save_frame(self):
+        path = os.path.join(os.path.split(os.path.split(__file__)[0])[0], 'out')
+        cv2.imwrite(path, self.frame[800:950, :460, :])
