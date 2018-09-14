@@ -3,7 +3,7 @@ import time
 import tkinter as tk
 
 class OutputScreen:
-    def __init__(self):
+    def __init__(self, enabled=True):
         root = tk.Tk()
         root.title('KDA Viewer')
         root.geometry("500x500")
@@ -23,7 +23,9 @@ class OutputScreen:
         tk.Message(root, textvariable=self.leaderboard, width=230, padx=10).grid(row=1, column=1, rowspan=3, sticky=tk.W+tk.N)
 
         self.root = root
-        self.root.update()
+
+        if enabled:
+            self.root.update()
 
     # players_info looks like this:
     # {

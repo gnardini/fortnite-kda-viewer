@@ -2,7 +2,8 @@ import cv2
 from mss import mss
 from PIL import Image
 import numpy as np
-import cv2
+import os
+import uuid
 
 class Vision:
     def __init__(self):
@@ -10,9 +11,12 @@ class Vision:
         self.screen = mss()
 
         self.frame = None
+        self.frame_name = str(uuid.uuid4())
+        self.frame_number = 0
 
     def refresh_frame(self):
         self.frame = self.take_screenshot()
+        self.frame_number = self.frame_number + 1
 
     def convert_rgb_to_bgr(self, img):
         return img[:, :, ::-1]
@@ -29,5 +33,11 @@ class Vision:
         return img
 
     def save_frame(self):
-        path = os.path.join(os.path.split(os.path.split(__file__)[0])[0], 'out')
-        cv2.imwrite(path, self.frame[800:950, :460, :])
+        path = os.path.join(os.path.split(os.path.split(__file__)[0])[0],
+                'out', self.frame_name, 'frame-%d.png' % self.frame_number)
+        self.create_dirs(os.path.split(path)[0])
+        cv2.imwrite(path, self.frame)
+
+    def create_dirs(self, directory):
+        if not os.path.exists(directory):
+            os.makedirs(directory)

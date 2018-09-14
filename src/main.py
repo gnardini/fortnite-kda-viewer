@@ -15,7 +15,7 @@ vision = v.Vision()
 classifier = lc.LettersClassifier()
 gamescreen = gs.GameScreen(vision, classifier)
 api = fa.FortniteApi(config)
-screen = os.OutputScreen()
+screen = os.OutputScreen(False)
 
 kdas = {}
 
