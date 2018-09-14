@@ -199,7 +199,7 @@ class GameScreen:
     def player_from_white_text(self, text):
         eliminated_words = ['shotgunned', 'bludgeoned', 'nearly.sploded', 'nearly .sploded',
             'sploded', 'sniped', 'knocked out', 'finally eliminated', 'finallyeliminated',
-            'eliminated', 'nearly cleared out']
+            'eliminated', 'nearly cleared out', 'dealt it']
         eliminated_words = [word.split(' ') for word in eliminated_words]
         words = text.split(' ')
         for eliminated_word_array in eliminated_words:

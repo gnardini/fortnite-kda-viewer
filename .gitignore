@@ -3,6 +3,7 @@ test/screenshots
 bin/
 include/
 lib/
+out/
 pip-selfcheck.json
 *__pycache__*
 *.pyc

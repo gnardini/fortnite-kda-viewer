@@ -15,24 +15,27 @@ vision = v.Vision()
 classifier = lc.LettersClassifier()
 gamescreen = gs.GameScreen(vision, classifier)
 api = fa.FortniteApi(config)
-screen = os.OutputScreen(False)
+screen = os.OutputScreen(True)
 
 kdas = {}
 
+frame_number = 14
+max_frame = 266
+vision.frame_number = frame_number
+
 while(True):
-    start_all = time.perf_counter()
-    start = start_all
-
-    vision.refresh_frame()
-
-    print('take screenshot: %f' % (time.perf_counter() - start))
     start = time.perf_counter()
 
-    # players = gamescreen.find_players()
-    vision.save_frame()
+    # vision.refresh_frame()
+    vision.read_frame()
 
-    print('save frame: %f' % (time.perf_counter() - start))
-    start = time.perf_counter()
+    players = gamescreen.find_players()
+    screen.update_players_info(players)
+
+    frame_number = frame_number + 1
+    if frame_number == max_frame:
+        while(True):
+            time.sleep(1)
 
 
 
@@ -49,6 +52,7 @@ while(True):
     # players_to_show = filter(kdas, lambda x: x.timestamp >= min_timstamp)
     # screen.show_players(players_to_show)
     # Sleep only 5 seconds while in game but more time when not in game.
-    time.sleep(5)
-    print('sleep: %f' % (time.perf_counter() - start))
-    print('ALL: %f' % (time.perf_counter() - start_all))
+
+    print('Time: %f' % (time.perf_counter() - start))
+    if frame_number%10 == 0:
+        time.sleep(1)

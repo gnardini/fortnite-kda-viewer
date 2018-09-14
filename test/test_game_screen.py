@@ -14,12 +14,13 @@ class GameScreenTests(unittest.TestCase):
 
     def test_find_players(self):
         print()
-        min = 1
-        max = 1
+        min = 15
+        max = 266
         i = min
         times = 0
         while i <= max:
-            file = 'screenshot' + str(i)
+            # file = 'screenshot' + str(i)
+            file = 'frame-' + str(i)
             self.read_image('%s.png' % file)
 
             start = time.perf_counter()
@@ -29,9 +30,9 @@ class GameScreenTests(unittest.TestCase):
             print('-----')
             print('File %s took %f' % (file, time_diff))
 
-            # all_kills = players_info['player_kills'] + players_info['player_deaths'] + players_info['other_kills']
-            # for kill in all_kills:
-                # print('%s killed: %s' % kill)
+            all_kills = players_info['player_kills'] + players_info['player_deaths'] + players_info['other_kills']
+            for kill in all_kills:
+                print('%s killed: %s' % kill)
             i = i+1
         print('Average: %f' % (times / max))
 
@@ -46,6 +47,9 @@ class GameScreenTests(unittest.TestCase):
         self.assertEqual('pepito', self.game_screen.player_from_white_text('pepito nearly .sploded (60 m)'))
 
     def read_image(self, path):
-        file_path = os.path.join(os.path.split(__file__)[0], 'screenshots', path)
-        img = cv2.imread(file_path)
-        self.vision.frame = img[800:950, :460, :]
+        # file_path = os.path.join(os.path.split(__file__)[0], 'screenshots', path)
+        # img = cv2.imread(file_path)
+        # self.vision.frame = img[800:950, :460, :]
+
+        file_path = os.path.join(os.path.split(os.path.split(__file__)[0])[0], 'out', 'full_game', path)
+        self.vision.frame = cv2.imread(file_path)
