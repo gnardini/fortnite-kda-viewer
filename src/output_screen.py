@@ -4,6 +4,7 @@ import tkinter as tk
 
 class OutputScreen:
     def __init__(self, enabled=True):
+        self.enabled = enabled
         root = tk.Tk()
         root.title('KDA Viewer')
         root.geometry("500x500")
@@ -34,13 +35,13 @@ class OutputScreen:
 
     # players_info looks like this:
     # {
-    #   'player_kills': [('nardiii', 'Streamer[342]')],
+    #   'player_kills': [('nardiii', 'Streamer[342]', 'rifle')],
     #   'player_deaths': [],
-    #   'other_kills': [('SaindoComSuaMae', 'Koringa._Da_Rpg'),
-    #                   ('', 'Streamer[342]'),
-    #                   ('FC99', 'TheKillerNight54'),
-    #                   ('Gsb1612', 'Wolfraind'),
-    #                   ('SaindoComSuaMae', 'Koringa._Da_Rpg')]
+    #   'other_kills': [('SaindoComSuaMae', 'Koringa._Da_Rpg', 'shotgun'),
+    #                   ('', 'Streamer[342]', None),
+    #                   ('FC99', 'TheKillerNight54', 'splodes'),
+    #                   ('Gsb1612', 'Wolfraind', 'rifle'),
+    #                   ('SaindoComSuaMae', 'Koringa._Da_Rpg', 'rifle')]
     # }
     def update_players_info(self, players_info):
         killed_names = [pair[1].strip() for pair in players_info['player_kills']]
@@ -72,7 +73,9 @@ class OutputScreen:
         self.kills.set('\n'.join(self.killed_names))
         self.killer.set('\n'.join(self.killer_names))
         self.leaderboard.set('\n'.join(all_kills_text))
-        self.root.update()
+
+        if self.enabled:
+            self.root.update()
 
     def is_name(self, text):
         return text.replace(' ', '').replace('.', '').replace('_', '').replace('?', '') != ""

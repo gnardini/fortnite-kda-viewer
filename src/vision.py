@@ -7,7 +7,7 @@ import uuid
 
 class Vision:
     def __init__(self):
-        self.monitor = {'top': 800, 'left': 0, 'width': 460, 'height': 150}
+        self.monitor = {'top': 800, 'left': 0, 'width': 500, 'height': 150}
         self.screen = mss()
 
         self.frame = None

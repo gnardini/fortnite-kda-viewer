@@ -7,7 +7,7 @@ import random
 import time
 from difflib import SequenceMatcher
 
-class GameScreen:
+class NnGameScreen:
     def __init__(self, vision, letters_classifier):
         self.vision = vision
         self.letters_classifier = letters_classifier
@@ -56,8 +56,8 @@ class GameScreen:
         # print('text_from_imgs: %f' % (time.perf_counter() - start))
         start = time.perf_counter()
 
-        white_info = [(self.info_from_white_text(text_info[0]), text_info[1]) for text_info in  white_text]
-        white_killers = [(info[0]['killer'], info[1]) for info in white_info if info[0]['killer'] != None]
+        white_players = [(self.player_from_white_text(text_info[0]), text_info[1]) for text_info in  white_text]
+        white_players = list(filter(lambda player_info: player_info[0] != None, white_players))
 
         # print('players_from_text: %f' % (time.perf_counter() - start))
         # print('All: %f' % (time.perf_counter() - start_all))
@@ -69,9 +69,9 @@ class GameScreen:
         # print('White players: %s' % white_text)
         # print('--------------')
 
-        player_kills = self.find_kills(player_kills_info, other_players, white_info)
-        player_deaths = self.find_kills(white_killers, player_deaths_info, white_info)
-        other_kills = self.find_kills(white_killers, other_players, white_info)
+        player_kills = self.find_kills(player_kills_info, other_players)
+        player_deaths = self.find_kills(white_players, player_deaths_info)
+        other_kills = self.find_kills(white_players, other_players)
 
         if save_letters:
             # i = self.save_letters_to_file(other_players_imgs, file_name)
@@ -196,40 +196,17 @@ class GameScreen:
 
         return players
 
-    def info_from_white_text(self, text):
-        separator_words = ['shotgunned', 'bludgeoned', 'nearly.sploded', 'nearly .sploded',
+    def player_from_white_text(self, text):
+        eliminated_words = ['shotgunned', 'bludgeoned', 'nearly.sploded', 'nearly .sploded',
             'sploded', 'sniped', 'knocked out', 'finally eliminated', 'finallyeliminated',
             'eliminated', 'nearly cleared out', 'dealt it']
-        separator_words = [word.split(' ') for word in separator_words]
-        weapon_words = {
-            'shotgun': ['shotgunned', 'shotgun'],
-            'pistol': ['pistol'],
-            'pickaxe': ['bludgeoned'],
-            'splodes': ['sploded'],
-            'rifle': ['rifle'],
-            'smg': ['SMG'],
-            'snipe': ['sniped'],
-            'smell': ['dealt it'],
-            'clear': ['cleared out'],
-            'fall': ['fall'],
-            'trap': ['trap'],
-            'suicide_stink': ['their own stink'],
-            'suicide_fall': ['stick the landing']
-        }
-        for weapon, words in weapon_words.items():
-            weapon_words[weapon] = [word.split(' ') for word in words]
+        eliminated_words = [word.split(' ') for word in eliminated_words]
         words = text.split(' ')
-        for separator_words_array in separator_words:
+        for eliminated_word_array in eliminated_words:
             for words_index in range(len(words)):
-                if self.phrase_contains_words(words[words_index:], separator_words_array):
-                    return {
-                        'killer': ' '.join(words[:words_index]),
-                        'weapon': self.killer_weapon(words, weapon_words)
-                    }
-        return {
-            'killer': None,
-            'weapon': None
-        }
+                if self.phrase_contains_words(words[words_index:], eliminated_word_array):
+                    return ' '.join(words[:words_index])
+        return None
 
     def phrase_contains_words(self, phrase, eliminated_words):
         for phrase_word_index in range(len(phrase)):
@@ -238,14 +215,6 @@ class GameScreen:
             if not self.words_are_similar(phrase[phrase_word_index], eliminated_words[phrase_word_index]):
                 return False
         return True
-
-    def killer_weapon(self, phrase, weapon_words):
-        for weapon, weapon_list in weapon_words.items():
-            for weapon_word_array in weapon_list:
-                for words_index in range(len(phrase)):
-                    if self.phrase_contains_words(phrase[words_index:], weapon_word_array):
-                        return weapon
-        return None
 
     def words_are_similar(self, word1, word2):
         return SequenceMatcher(None, word1, word2).ratio() >= .75
@@ -267,44 +236,10 @@ class GameScreen:
                 current_index = current_index + 1
         return current_index
 
-    def find_kills(self, killer_players, dead_players, extra_info):
-        # TODO: CHECK THIS
-        # suicide_keys = ['suicide_fall', 'suicide_stink']
-
+    def find_kills(self, killer_players, dead_players):
         matching = []
-        killer_index = 0
-        dead_index = 0
-        extra_index = 0
-        while killer_index < len(killer_players):
-            (killer_player, killer_y) = killer_players[killer_index]
-
-            (dead_player, dead_y, dead_index) = self.find_next_index(dead_players, dead_index, killer_y)
-            (extra_player, extra_y, extra_index) = self.find_next_index(extra_info, extra_index, killer_y)
-
-            if dead_index >= len(dead_players):
-                return matching
-
-            (dead_player, dead_y) = dead_players[dead_index]
-            if abs(killer_y - dead_y) < 5:
-                weapon = None
-                if extra_index < len(extra_info):
-                    (extra, extra_y) = extra_info[extra_index]
-                    if abs(killer_y - extra_y) < 5:
-                        weapon = extra['weapon']
-                matching.append((killer_player, dead_player, weapon))
-
-            killer_index = killer_index + 1
-
+        for (killer_player, killer_y) in killer_players:
+            for (dead_player, dead_y) in dead_players:
+                if (abs(killer_y - dead_y) < 10):
+                    matching.append((killer_player, dead_player))
         return matching
-
-    def find_next_index(self, info_list, current_index, target_y):
-        if current_index >= len(info_list):
-            return (None, None, current_index)
-
-        while current_index < len(info_list):
-            y = info_list[current_index][1]
-            if y + 5 > target_y:
-                return (info_list[current_index][0], y, current_index)
-            current_index = current_index + 1
-
-        return (None, None, current_index)

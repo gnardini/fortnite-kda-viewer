@@ -2,6 +2,7 @@ import game_screen as gs
 import vision as v
 import fortnite_api as fa
 import output_screen as os
+import weapons_screen as ws
 import letters_classifier as lc
 import time
 import configparser
@@ -15,27 +16,36 @@ vision = v.Vision()
 classifier = lc.LettersClassifier()
 gamescreen = gs.GameScreen(vision, classifier)
 api = fa.FortniteApi(config)
-screen = os.OutputScreen(True)
+# screen = os.OutputScreen(enabled = False)
+weapons_screen = ws.WeaponsScreen(enabled = False)
 
 kdas = {}
 
-frame_number = 14
+frame_number = 1
 max_frame = 266
 vision.frame_number = frame_number
 
 while(True):
     start = time.perf_counter()
 
-    # vision.refresh_frame()
-    vision.read_frame()
+    vision.refresh_frame()
+    # vision.read_frame()
 
     players = gamescreen.find_players()
-    screen.update_players_info(players)
+    weapons_screen.update_players_info(players)
+
+    if frame_number % 10 == 0:
+        print('----------- OWN ----------')
+        print(weapons_screen.own.get())
+        print('--------- TOTAL ----------')
+        print(weapons_screen.total.get())
+        print('--------------------------')
 
     frame_number = frame_number + 1
-    if frame_number == max_frame:
-        while(True):
-            time.sleep(1)
+    time.sleep(2)
+    # if frame_number == max_frame:
+    #     while(True):
+    #         time.sleep(1)
 
 
 
@@ -53,6 +63,6 @@ while(True):
     # screen.show_players(players_to_show)
     # Sleep only 5 seconds while in game but more time when not in game.
 
-    print('Time: %f' % (time.perf_counter() - start))
-    if frame_number%10 == 0:
-        time.sleep(1)
+    # print('%d - Time: %f' % (frame_number, time.perf_counter() - start))
+    # if frame_number%10 == 0:
+    #     time.sleep(1)

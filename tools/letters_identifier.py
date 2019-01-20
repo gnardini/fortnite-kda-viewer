@@ -1,7 +1,6 @@
 import os
 import cv2
 import json
-from pprint import pprint
 from src import letters_classifier
 
 white_mapping = True
